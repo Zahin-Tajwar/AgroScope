@@ -10,7 +10,7 @@ Agroscope aims to connect the view we get from space with what happens on the gr
 
 The project combines NASA Earth observations, agricultural knowledge, soil information, crop characteristics, and farmer priorities to help explore crop-rotation strategies that can protect soil, use resources effectively, and adapt to changing environmental conditions.
 
-Agroscope is designed to support farmer decision-making rather than replace it.
+Agroscope is designed to support farmer in choosing crop rotation strategies.
 
 ## Current Prototype
 
@@ -44,6 +44,7 @@ The Earth-observation values shown in the prototype are not currently retrieved 
 - JavaScript
 - CesiumJS
 - SVG-based visualizations
+- English and Bangla rendering
 
 ### Planned Final System
 
@@ -57,7 +58,6 @@ The future system is planned to include:
 - Crop-rotation decision logic
 - Live and near-real-time data sources
 - AI-assisted decision support
-- English and Bangla rendering
 
 Potential NASA data sources include:
 
@@ -78,7 +78,7 @@ Browser → HTML/CSS/JavaScript → Sample Data → Visualizations
 
 ### Planned
 
-Frontend  
+Frontend
 ↓  
 API  
 ↓  
@@ -86,13 +86,13 @@ Python Backend
 ↓  
 NASA + Agricultural Data  
 ↓  
-Geospatial Processing  
+Geospatial Processing & Analysis
 ↓  
 Decision Engine  
 ↓  
 Structured Results  
 ↓  
-Maps / Charts / Recommendations
+Maps / Charts / Comparisons/ Recommendations
 
 ## Project Structure
 
