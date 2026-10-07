@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Agroscope — Field intelligence for better rotations</title>
+<meta name="description" content="Agroscope helps farmers choose crop rotations using NASA Earth observations, soil and climate data."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css"/>
+<link rel="stylesheet" href="css/base.css?v=3"/>
+<link rel="stylesheet" href="css/layout.css?v=4"/>
+<link rel="stylesheet" href="css/sections.css?v=8"/>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js" defer></script>
+<script src="js/i18n.js?v=7" defer></script>
+<script src="js/data.js?v=6" defer></script>
+<script src="js/charts.js?v=3" defer></script>
+<script src="js/map.js?v=10" defer></script>
+<script src="js/app.js?v=7" defer></script>
+</head>
+<body>
+
+<div class="progress"><i id="progressBar"></i></div>
+
+<header class="topbar" id="topbar">
+  <a class="brand" href="#intro">
+    <img src="logo2.png" alt="Company Logo" class="topbar-logo" style="height: 35px; width: auto; margin-top: -5px; margin-left: 15px;">
+  </a>
+  <nav class="jumpnav" id="jumpnav">
+    <button data-goto="input"><b>01</b><span data-i18n="nav.input">Field input</span></button>
+    <button data-goto="geography"><b>02</b><span data-i18n="nav.geo">Geography</span></button>
+    <button data-goto="suitability"><b>03</b><span data-i18n="nav.crops">Crops</span></button>
+    <button data-goto="risk"><b>04</b><span data-i18n="nav.risk">Risk</span></button>
+    <button data-goto="rotations"><b>05</b><span data-i18n="nav.rot">Rotations</span></button>
+    <button data-goto="recommend"><b>06</b><span data-i18n="nav.reco">Advice</span></button>
+    <button data-goto="help"><b>07</b><span data-i18n="nav.help">Help</span></button>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button data-lang="en" class="on">EN</button>
+    <button data-lang="bn">বাংলা</button>
+  </div>
+</header>
+
+<!-- ================= INTRO ================= -->
+<section id="intro" class="hero">
+  <div class="hero-art" aria-hidden="true">
+    <svg viewBox="0 0 720 720" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#12180f"/><stop offset="1" stop-color="#1d2a17"/>
+        </linearGradient>
+        <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#3f5a2e"/><stop offset=".5" stop-color="#8aa04f"/><stop offset="1" stop-color="#d9c88f"/>
+        </linearGradient>
+        <radialGradient id="glow"><stop offset="0" stop-color="#f0e6c8" stop-opacity=".9"/><stop offset="1" stop-color="#f0e6c8" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="720" height="720" fill="url(#sky)"/>
+      <circle cx="540" cy="180" r="150" fill="url(#glow)" opacity=".45"/>
+      <circle cx="540" cy="180" r="54" fill="#efe4c2"/>
+      <!-- orbit -->
+      <g class="orbit">
+        <ellipse cx="360" cy="300" rx="330" ry="150" fill="none" stroke="#7d8f57" stroke-width="1" opacity=".55"/>
+        <g class="sat">
+          <circle cx="690" cy="300" r="7" fill="#e8e2cd"/>
+          <rect x="676" y="296" width="9" height="8" fill="#9fb268"/>
+          <rect x="695" y="296" width="9" height="8" fill="#9fb268"/>
+        </g>
+      </g>
+      <!-- scan beam -->
+      <path class="beam" d="M420 350 L300 620 L520 620 Z" fill="#c9dda0" opacity=".12"/>
+      <!-- fields -->
+      <g class="fields">
+        <path d="M0 470 C140 430 250 500 360 470 C470 440 600 500 720 460 L720 720 L0 720 Z" fill="#2c3d22"/>
+        <path d="M0 540 C160 500 260 570 400 540 C540 510 630 560 720 530 L720 720 L0 720 Z" fill="#3b5029"/>
+        <path d="M0 620 C160 590 300 650 440 620 C560 595 650 630 720 610 L720 720 L0 720 Z" fill="#4d6531"/>
+      </g>
+      <!-- contour rows -->
+      <g stroke="#93a862" stroke-width="1.4" fill="none" opacity=".5">
+        <path d="M0 500 C150 462 260 532 370 500 C480 470 610 528 720 490"/>
+        <path d="M0 570 C160 532 270 600 410 570 C550 540 640 588 720 558"/>
+        <path d="M0 650 C160 622 300 682 440 652 C560 627 650 662 720 642"/>
+      </g>
+      <g class="ndvi" opacity=".9">
+        <rect x="430" y="642" width="46" height="8" fill="#7a2f13"/>
+        <rect x="482" y="642" width="46" height="8" fill="#b8672a"/>
+        <rect x="534" y="642" width="46" height="8" fill="#d8a447"/>
+        <rect x="586" y="642" width="46" height="8" fill="#a7bb57"/>
+        <rect x="638" y="642" width="46" height="8" fill="#5e8b3c"/>
+        <rect x="430" y="656" width="254" height="4" fill="#2f5b2a" opacity=".55"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="hero-copy">
+    <p class="eyebrow" data-i18n="hero.eyebrow">Earth observation · soil · climate</p>
+    <h1>Agro<span>scope</span></h1>
+    <p class="lede" data-i18n="hero.lede">See what your land can carry. Plan the next three seasons in one view.</p>
+    <div class="hero-btns">
+      <button class="btn primary" data-goto="input" data-i18n="hero.b1">Start with a field</button>
+      <button class="btn" data-goto="geography" data-i18n="hero.b2">Maps &amp; data</button>
+      <button class="btn" data-goto="suitability" data-i18n="hero.b3">Crop fit</button>
+      <button class="btn" data-goto="risk" data-i18n="hero.b4">Risks</button>
+      <button class="btn" data-goto="rotations" data-i18n="hero.b5">Rotations</button>
+      <button class="btn" data-goto="help" data-i18n="hero.b6">Help</button>
+    </div>
+    <div class="hero-src">
+      <span data-i18n="hero.src">Built on NASA Earth Observation data</span>
+      <em>MODIS · SMAP · Landsat · GPM · POWER</em>
+    </div>
+  </div>
+
+  <div class="scrollhint"><span data-i18n="hero.scroll">Scroll</span><i></i></div>
+</section>
+
+<!-- ================= INPUT ================= -->
+<section id="input" class="sec sec-input">
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <h2 data-i18n="sec.input">Tell us about the field</h2>
+    <p class="sec-sub" data-i18n="sec.inputSub">Four short steps. Everything below updates from this.</p>
+  </div>
+
+  <div class="form">
+    <div class="frow">
+      <label data-i18n="f.loc">Location</label>
+      <div class="field">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <input id="locInput" list="places" placeholder="District, village or coordinates" data-i18n-ph="f.locPh"/>
+        <button class="ghost" id="geoBtn" data-i18n="f.locMe">Use my location</button>
+        <button class="ghost pick" id="pickBtn1">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span data-i18n="f.pickMap">Pick on map</span>
+        </button>
+        <datalist id="places"></datalist>
+      </div>
+    </div>
+
+    <div class="frow">
+      <label data-i18n="f.div">Division / district</label>
+      <div class="field">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M4 7l5-3 6 3 5-3v13l-5 3-6-3-5 3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 4v13M15 7v13" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+        <select id="divSel" aria-label="Division"></select>
+        <select id="distSel" aria-label="District"></select>
+      </div>
+    </div>
+
+    <div class="frow">
+      <label data-i18n="f.area">Land size</label>
+      <div class="field">
+        <svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 11h16M11 4v16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="2.5 2.5"/></svg>
+        <input id="areaInput" type="number" min="0.01" step="0.01" value="1.8" placeholder="e.g. 1.8" data-i18n-ph="f.areaPh"/>
+        <span class="unit" data-i18n="ui.ha">ha</span>
+      </div>
+    </div>
+
+    <div class="frow">
+      <label data-i18n="f.crop">Current crop</label>
+      <div class="field">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M4 19c6-9 14-9 16-15" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 16c-1-4 1-7 5-8 1 4-1 7-5 8zM14 12c0-3 2-5 5-5 0 3-2 5-5 5z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <input id="cropInput" list="cropList" placeholder="e.g. Boro rice, wheat, maize" data-i18n-ph="f.cropPh"/>
+        <datalist id="cropList">
+          <option value="Boro rice"></option><option value="Aman rice"></option><option value="Aus rice"></option>
+          <option value="Wheat"></option><option value="Maize"></option><option value="Potato"></option>
+          <option value="Mustard"></option><option value="Mung bean"></option><option value="Jute"></option>
+          <option value="Sugarcane"></option><option value="Vegetables"></option><option value="Idle / fallow"></option>
+        </datalist>
+        <button class="ghost cam" id="camBtn" title="Scan crop with camera">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M3 8.5A2 2 0 0 1 5 6.5h2l1.4-2h7.2L17 6.5h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span data-i18n="f.cam">Scan</span>
+        </button>
+        <input type="file" id="cropCam" accept="image/*" capture="environment" hidden/>
+      </div>
+      <div class="detect" id="detectBox" hidden>
+        <img id="detectImg" alt=""/>
+        <div><b id="detectName">Boro rice</b><span id="detectConf">96% match</span></div>
+        <button class="ghost" id="detectClear" data-i18n="f.clear">Remove</button>
+      </div>
+    </div>
+
+    <div class="frow">
+      <label data-i18n="f.soil">Soil information <em data-i18n="f.optional">optional</em></label>
+      <div class="field soil-fields">
+        <select id="soilType">
+          <option value="" data-i18n="f.soilType">Soil type</option>
+          <option>Loam</option><option>Clay loam</option><option>Silty clay</option>
+          <option>Sand</option><option>Sandy loam</option><option>Silt</option>
+        </select>
+        <select id="soilTexture">
+          <option value="" data-i18n="f.texture">Texture</option>
+          <option>Fine</option><option>Medium</option><option>Coarse</option>
+        </select>
+        <input id="soilPh" type="number" step="0.1" min="3" max="10" placeholder="pH"/>
+        <input id="soilOm" type="number" step="0.1" min="0" max="10" placeholder="Organic matter %"/>
+        <button class="ghost" id="soilSkip" data-i18n="f.skip">Use satellite estimate</button>
+      </div>
+    </div>
+
+    <div class="frow priority-row">
+      <label data-i18n="f.prio">Farmer priority</label>
+      <div>
+        <p class="hint" data-i18n="f.prioHint">Select a few options from below</p>
+        <div class="chips" id="prioChips"></div>
+        <p class="count"><b id="prioCount">0</b> <span data-i18n="f.selected">selected</span></p>
+      </div>
+    </div>
+
+    <div class="frow submit-row">
+      <span></span>
+      <button class="btn primary big" id="runBtn"><span data-i18n="f.run">Analyse this field</span> <i>→</i></button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GEOGRAPHY ================= -->
+<section id="geography" class="sec sec-geo">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <h2 data-i18n="sec.geo">Geography analysis</h2>
+    <p class="sec-sub" data-i18n="sec.geoSub">Switch the map. The side readings follow it.</p>
+  </div>
+
+  <div class="map-wrap">
+    <div class="map-tabs">
+      <div class="seg" id="mapSeg">
+        <button class="on" data-layer="live" data-i18n="map.live">Live field / region</button>
+        <button data-layer="cover" data-i18n="map.cover">Land cover / soil</button>
+        <button data-layer="eo" data-i18n="map.eo">EO layer</button>
+      </div>
+      <div class="seg small" id="eoSeg">
+        <button class="on" data-eo="ndvi">NDVI</button>
+        <button data-eo="evi">EVI</button>
+        <button data-eo="npwi">NPWI</button>
+        <button data-eo="lai">LAI</button>
+        <button data-eo="et">ET</button>
+        <button data-eo="lst">LST</button>
+        <button data-eo="sm">SM</button>
+      </div>
+      <button type="button" class="pickbtn" id="pickLoc">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span data-i18n="map.pick">Set location on map</span>
+      </button>
+    </div>
+
+    <div class="map-box">
+      <div id="map" class="map3d"></div>
+      <div class="map-fallback" id="mapFallback" hidden></div>
+      <div class="map-zoom" id="mapZoom">
+        <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+        <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+        <button type="button" id="zoomGlobe" aria-label="View whole earth">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.4 9.2h17.2M3.4 14.8h17.2" stroke="currentColor" stroke-width="1.4"/></svg>
+        </button>
+        <button type="button" id="zoomHome" aria-label="Recenter on field">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="map-pop" id="mapPop" hidden></div>
+      <div class="map-prompt" id="mapPrompt" hidden></div>
+      <div class="map-hint" id="mapHint" data-i18n="map.hint">Drag to tilt / rotate · wheel to zoom · click a pointer for details</div>
+      <div class="map-legend" id="mapLegend"></div>
+      <div class="map-pin">
+        <b id="pinLoc" data-i18n="map.bd">Bangladesh</b>
+        <span id="pinCoord" data-i18n="map.noLoc">Pick a location on the map</span>
+      </div>
+      <div class="map-3dtag">3D</div>
+    </div>
+
+    <div class="eo-strip" id="eoStrip"></div>
+  </div>
+
+  <div class="climate">
+    <div class="mini-head">
+      <h3 data-i18n="geo.climate">Climate data</h3>
+      <div class="seg small" id="climSeg">
+        <button class="on" data-c="temp" data-i18n="geo.temp">Temperature</button>
+        <button data-c="hum" data-i18n="geo.hum">Humidity</button>
+        <button data-c="rain" data-i18n="geo.rain">Rainfall</button>
+      </div>
+    </div>
+    <div class="chart" id="climateChart"></div>
+    <div class="climate-side">
+      <div class="readout" id="climReadout"></div>
+      <div class="hazard">
+        <p class="lbl" data-i18n="geo.hazard">Climate hazard / risk · next 12 months</p>
+        <div class="chart" id="hazardGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="soil">
+    <div class="mini-head">
+      <h3 data-i18n="geo.soil">Soil report</h3>
+      <span class="src" data-i18n="geo.soilSrc">field sample + satellite estimate</span>
+    </div>
+    <div class="soil-grid">
+      <div class="soil-profile" id="soilProfile"></div>
+      <div class="soil-bars" id="soilBars"></div>
+      <div class="soil-dials" id="soilDials"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SUITABILITY ================= -->
+<section id="suitability" class="sec sec-crops">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <h2 data-i18n="sec.crops">Crop suitability</h2>
+    <p class="sec-sub" data-i18n="sec.cropsSub">Ranked for this field. Tap one to see why.</p>
+  </div>
+  <div class="crop-split">
+    <div class="crop-rank" id="cropList2"></div>
+    <div class="crop-detail" id="cropDetail"></div>
+  </div>
+</section>
+
+<!-- ================= RISK ================= -->
+<section id="risk" class="sec sec-risk">
+  <div class="sec-head">
+    <span class="sec-num">04</span>
+    <h2 data-i18n="sec.risk">Risk to this land</h2>
+    <p class="sec-sub" data-i18n="sec.riskSub">What is threatening the field right now, and when.</p>
+  </div>
+  <div class="risk-domains" id="riskDomains"></div>
+  <div class="risk-cal">
+    <p class="lbl" data-i18n="risk.cal">Threat calendar · severity by month</p>
+    <div class="chart" id="riskCalendar"></div>
+  </div>
+  <div class="threats" id="threats"></div>
+</section>
+
+<!-- ================= ROTATIONS ================= -->
+<section id="rotations" class="sec sec-rot">
+  <div class="sec-head">
+    <span class="sec-num">05</span>
+    <h2 data-i18n="sec.rot">Rotation comparison</h2>
+    <p class="sec-sub" data-i18n="sec.rotSub">Four options, scored against your priorities. Click one to open it.</p>
+  </div>
+  <div class="rot-compare chart" id="rotCompare"></div>
+  <div class="rot-table" id="rotTable"></div>
+</section>
+
+<!-- ================= RECOMMEND ================= -->
+<section id="recommend" class="sec sec-reco">
+  <div class="sec-head">
+    <span class="sec-num">06</span>
+    <h2 data-i18n="sec.reco">Final recommendation</h2>
+    <p class="sec-sub" data-i18n="sec.recoSub">One short answer. Click the plan to open everything behind it.</p>
+  </div>
+  <div class="reco-window" id="recoWindow"></div>
+  <div class="reco-others" id="recoOthers"></div>
+</section>
+
+<!-- ================= HELP ================= -->
+<section id="help" class="sec sec-help">
+  <div class="sec-head">
+    <span class="sec-num">07</span>
+    <h2 data-i18n="sec.help">Help &amp; support</h2>
+    <p class="sec-sub" data-i18n="sec.helpSub">Practical next steps for this field.</p>
+  </div>
+  <div class="help-grid" id="helpGrid"></div>
+</section>
+
+<footer>
+  <div class="foot-brand">Agroscope</div>
+  <p data-i18n="foot.note">Prototype interface. Values shown are representative estimates from NASA Earth Observation datasets (MODIS, SMAP, Landsat, GPM, POWER) combined with local soil records.</p>
+  <div class="foot-links">
+    <span>NASA Space Apps 2026</span><span>·</span><span data-i18n="foot.support">Support</span><span>·</span><span data-i18n="foot.data">Data sources</span>
+  </div>
+</footer>
+
+<!-- analysis loader -->
+<div class="loader" id="loader" hidden>
+  <div class="loader-box">
+    <p class="loader-title" data-i18n="load.title">Reading your field</p>
+    <ul id="loadSteps"></ul>
+    <div class="loader-bar"><i id="loadBar"></i></div>
+  </div>
+</div>
+
+<!-- rotation detail drawer -->
+<div class="drawer" id="drawer" hidden>
+  <div class="drawer-scrim" data-close></div>
+  <aside class="drawer-panel" id="drawerPanel"></aside>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+</body>
+</html>
